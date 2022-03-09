@@ -1,4 +1,4 @@
-import { Controller, Get, Post, Param, Body } from '@nestjs/common';
+import { Controller, Get, Post, Param, Body, Response } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Prestamo } from './prestamos.entity';
@@ -31,18 +31,15 @@ export class PrestamoController {
         diasDevolucion = 7;
         break;
     }
-    // let contador = 0;
-    // while (contador < diasDevolucion) {
-    // fechaDevolucion = new Date(
-    //   fechaActual.setDate(fechaActual.getDate() + diasDevolucion),
-    // );
-    //   if (fechaDevolucion.getDay() != 0 && fechaDevolucion.getDay() != 6) {
-    //     contador++;
-    //   }
-    // }
-    fechaDevolucion = new Date(
-      fechaActual.setDate(fechaActual.getDate() + diasDevolucion),
-    );
+    let contador = 1;
+    while (contador < diasDevolucion) {
+      fechaDevolucion = new Date(
+        fechaActual.setDate(fechaActual.getDate() + 1),
+      );
+      if (fechaDevolucion.getDay() != 0 && fechaDevolucion.getDay() != 6) {
+        contador++;
+      }
+    }
     fechaDevolucion = fechaDevolucion.toISOString();
     fechaDevolucion = fechaDevolucion.split('T')[0].split('-').reverse();
     fechaDevolucion[1] = fechaDevolucion[1].split('')[1];
@@ -59,6 +56,7 @@ export class PrestamoController {
   @Post()
   async nuevoPrestamo(
     @Body() datos: Prestamo,
+    @Response() res: Response,
   ): Promise<
     { id: number; fechaMaximaDevolucion: string } | { mensaje: string }
   > {

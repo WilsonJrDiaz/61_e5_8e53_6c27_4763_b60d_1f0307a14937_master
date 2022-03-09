@@ -32,10 +32,9 @@ describe('Prestamos biblioteca test', () => {
   it('prestamo Libro Usuario Afiliado Deberia Almacenar Correctamente Y Calcular Fecha De Devolucion', async () => {
     const resultadoPrestarLibro: ResultadoPrestarLibroTest = (
       await chai.request(app.getHttpServer()).post('/prestamo').send({
-        id: 1,
-        isbn: 'DASD154212',
-        identificacionUsuario: '154515485',
-        tipoUsuario: 1,
+        isbn: 'ASDA7884',
+        identificacionUsuario: '974148',
+        tipoUsuario: USUARIO_AFILIADO,
       })
     ).body;
     const resultadoPrestamo: PrestamoTest = (
@@ -54,39 +53,49 @@ describe('Prestamos biblioteca test', () => {
   });
 
   it('prestamo Libro Usuario Empleado Deberia Almacenar Correctamente Y Calcular Fecha De Devolucion', async () => {
-    const resultadoPrestarLibro: ResultadoPrestarLibroTest = (await chai.request(app.getHttpServer())
-      .post('/prestamo')
-      .send(new SolicitudPrestarLibroTest(
-        "AWQ489",
-        "7481545",
-        USUARIO_EMPLEADO
-      ))).body;
+    const resultadoPrestarLibro: ResultadoPrestarLibroTest = (
+      await chai.request(app.getHttpServer()).post('/prestamo').send({
+        isbn: 'AWQ489',
+        identificacionUsuario: '7481545',
+        tipoUsuario: USUARIO_EMPLEADO,
+      })
+    ).body;
 
-
-    const resultadoPrestamo: PrestamoTest = (await chai.request(app.getHttpServer()).get(`/prestamo/${resultadoPrestarLibro.id}`)).body
+    const resultadoPrestamo: PrestamoTest = (
+      await chai
+        .request(app.getHttpServer())
+        .get(`/prestamo/${resultadoPrestarLibro.id}`)
+    ).body;
 
     chai.expect(resultadoPrestamo).to.have.property('id');
-    chai.expect(resultadoPrestamo.fechaMaximaDevolucion).to.equal(addDaysSkippingWeekends(new Date(), 8));
+    chai
+      .expect(resultadoPrestamo.fechaMaximaDevolucion)
+      .to.equal(addDaysSkippingWeekends(new Date(), 8));
     chai.expect(resultadoPrestamo.isbn).to.equal('AWQ489');
     chai.expect(resultadoPrestamo.identificacionUsuario).to.equal('7481545');
     chai.expect(resultadoPrestamo.tipoUsuario).to.equal(USUARIO_EMPLEADO);
   });
 
-
   it('prestamo Libro Usuario Invitado Deberia Almacenar Correctamente Y Calcular Fecha De Devolucion', async () => {
-    const resultadoPrestarLibro: ResultadoPrestarLibroTest = (await chai.request(app.getHttpServer())
-      .post('/prestamo')
-      .send(new SolicitudPrestarLibroTest(
-        "EQWQW8545",
-        "74851254",
-        USUARIO_INVITADO
-      ))).body;
-
+    const resultadoPrestarLibro: ResultadoPrestarLibroTest = (
+      await chai
+        .request(app.getHttpServer())
+        .post('/prestamo')
+        .send(
+          new SolicitudPrestarLibroTest(
+            'EQWQW8545',
+            '74851254',
+            USUARIO_INVITADO,
+          ),
+        )
+    ).body;
 
     const resultadoPrestamo: PrestamoTest = (await chai.request(app.getHttpServer()).get(`/prestamo/${resultadoPrestarLibro.id}`)).body
 
     chai.expect(resultadoPrestamo).to.have.property('id');
-    chai.expect(resultadoPrestamo.fechaMaximaDevolucion).to.equal(addDaysSkippingWeekends(new Date(), 7));
+    chai
+      .expect(resultadoPrestamo.fechaMaximaDevolucion)
+      .to.equal(addDaysSkippingWeekends(new Date(), 7));
     chai.expect(resultadoPrestamo.isbn).to.equal('EQWQW8545');
     chai.expect(resultadoPrestamo.identificacionUsuario).to.equal('74851254');
     chai.expect(resultadoPrestamo.tipoUsuario).to.equal(USUARIO_INVITADO);
@@ -100,19 +109,26 @@ describe('Prestamos biblioteca test', () => {
         "EQWQW8545",
         "1111111111",
         USUARIO_INVITADO
-      ));
+        ).retorno,
+      );
 
     chai.expect(resultadoPrestarPrimerLibro.status).to.equal(201);
 
     const resultadoPrestarSegundoLibro = await chai.request(app.getHttpServer())
       .post('/prestamo')
-      .send(new SolicitudPrestarLibroTest(
-        "EQWQW8545",
-        "1111111111",
-        USUARIO_INVITADO
-      ));
+      .send(
+        new SolicitudPrestarLibroTest(
+          'EQWQW8545',
+          '1111111111',
+          USUARIO_INVITADO,
+        ),
+      );
     chai.expect(resultadoPrestarSegundoLibro.status).to.equal(400);
-    chai.expect(resultadoPrestarSegundoLibro.body.mensaje).to.equal('El usuario con identificación 1111111111 ya tiene un libro prestado por lo cual no se le puede realizar otro préstamo');
+    chai
+      .expect(resultadoPrestarSegundoLibro.body.mensaje)
+      .to.equal(
+        'El usuario con identificación 1111111111 ya tiene un libro prestado por lo cual no se le puede realizar otro préstamo',
+      );
   });
 
   it('usuario Diferente A Invitado Tratando De Prestar Un Segundo Libro Deberia Prestarlo Correctamente', async () => {
